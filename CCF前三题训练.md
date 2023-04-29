@@ -134,6 +134,62 @@ int main() {
 
 **第二次提交**
 
+得分：70，运行超时
+
+思路
+
+这次是想着用优先级队列，每次都拿出时间最长的来给资源，等到循环结束后，直接取优先级队列里的最长时间就行。
+
+结果还是超时了。。。
+
+代码
+
+```c++
+#include<iostream>
+# include<queue>
+using namespace std;
+#define ll long long
+struct s {
+	int t;
+	int c;
+};
+//自定义<规则
+bool operator < (s a, s b) {
+	return a.t < b.t;
+}
+priority_queue<s> que;
+void solve(int n, ll m, int k) {
+	while (m >= que.top().c) {
+		int tempt = que.top().t - 1;
+		int tempc = que.top().c;
+		if (tempt < k)break;
+		else {
+			m -= tempc;
+			que.pop();
+			que.push({ tempt,tempc });
+		}
+	}
+	cout << que.top().t;
+	return;
+}
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n,k;
+	ll m;
+	int t, c;
+	cin >> n >> m >> k;
+	for (int i = 1; i <= n; i++) {
+		cin >> t >> c;
+		s a = { t,c };
+		que.push(a);
+	}
+	solve(n, m, k);
+	return 0;
+}
+```
+
+**第二次提交**
+
 ## 202212
 
 ### 第1题
@@ -256,3 +312,574 @@ int main() {
 }
 ```
 
+## 202209
+
+
+### 第1题
+
+**第一次提交**
+
+题目：http://118.190.20.162/view.page?gpid=T153
+
+分数: 100
+
+思路
+
+看懂题，直接做就行
+
+代码
+
+```c++
+#include<iostream>
+using namespace std;
+#define ll long long
+ll a[21];
+ll b[21];
+ll c[21];
+void solve(int n, ll m) {
+	c[0] = 1;
+	for (int i = 1; i <= n; i++)
+		c[i] = c[i - 1] * a[i];
+	ll sum = 0;
+	for (int i = 1; i <= n; i++) {
+		b[i] = (m % c[i] - sum) / c[i - 1];
+		sum += c[i - 1] * b[i];
+		cout << b[i] << " ";
+	}
+}
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n;
+	ll m;
+	cin >> n >> m;
+	for (int i = 1; i <= n; i++)
+		cin >> a[i];
+	solve(n, m);
+	return 0;
+}
+```
+
+### 第2题
+
+**第一次提交**
+
+题目：http://118.190.20.162/view.page?gpid=T152
+
+分数：100
+
+思路
+
+先计算出总价和包邮的差值m，问题转换为在不超过m的前提下，选出一个总价值最大的组合，这个组合就是要丢掉的物品，那其实就是一个01背包问题
+
+代码
+
+```c++
+#include<iostream>
+#include <vector>
+using namespace std;
+#define ll long long
+ll a[31];
+void solve(int n, ll m, ll sum) {
+	//创建n+1行m+1列二维数组（一开始还以为第一个参数是列）
+	vector<vector<ll>> ans(n+1, vector<ll>(m + 1, 0));
+	for(int i=1;i<=n;i++)
+		for (int j = 1; j <= m; j++) {
+			if (j >= a[i]) {
+				ans[i][j] = max(ans[i - 1][j], ans[i - 1][j - a[i]] + a[i]);
+			}
+			else ans[i][j] = ans[i - 1][j];
+		}
+	cout << sum - ans[n][m];
+	return;
+}
+
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n;
+	ll x;
+	ll sum = 0;
+	cin >> n >> x;
+	for (int i = 1; i <= n; i++) {
+		cin >> a[i];
+		sum += a[i];
+	}
+	//m：物品总价和包邮界限x的差值
+	ll m = sum - x;
+	//选择删除的物品，价值总和应该在不超过m的条件下尽可能最大
+	//实际上就是一个01背包问题
+	solve(n, m, sum);
+	return 0;
+}
+```
+
+## 202206
+
+### 第1题
+
+题目：http://118.190.20.162/submitlist.page?gpid=T148
+
+分数：100
+
+思路
+
+看懂题，直接做就行。注意：虽然不加`#include<math.h>`在vs中也可以使用sqrt()函数，但ccf里需要添加这个头文件，不然编译错误
+
+代码
+
+```c++
+#include<iostream>
+#include<math.h>
+using namespace std;
+double a[1001];
+void solve(int n, double sum) {
+	double avg = sum / n;
+	double temp = 0;
+	double d;
+	for (int i = 1; i <= n; i++) {
+		temp += (a[i] - avg) * (a[i] - avg);
+		d = temp / n;
+	}
+	for (int i = 1; i <= n; i++)
+		cout << (a[i] - avg) / sqrt(d) << "\n";
+		
+}
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n;
+	double sum = 0;
+	cin >> n;
+	for (int i = 1; i <= n; i++) {
+		cin >> a[i];
+		sum += a[i];
+	}
+	solve(n, sum);
+	return 0;
+}
+```
+
+### 第2题
+
+题目：http://118.190.20.162/view.page?gpid=T147
+
+**第一次提交**
+
+得分：100
+
+思路
+
+主要思路已经写在代码注释上了
+
+代码
+
+```c++
+#include<iostream>
+#include <vector>
+using namespace std;
+#define ll long long
+//定义一个结构体，记录绿化图A中值为1的坐标
+struct point {
+	ll x;
+	ll y;
+};
+point p[1001];//存放所有绿化图值为1的坐标
+int B[51][51];
+int c;//记录藏宝图B中值为1的个数
+void solve(int n, int s, int l) {
+	int ans = 0;
+	for (int i = 1; i <= n; i++) {//第一层循环：遍历p[i]与B[0][0]对应
+		//若以p[i]为左下角会越界，则后面都不用讨论了
+		if (p[i].x + s > l || p[i].y + s > l)continue;
+		int k = c - 1;//k：目前藏宝图中还未与绿化图匹配上的树的个数
+		for (int j = 1; j <= n; j++) {
+			//如果这个点都不在B[0][0]的右上方，则直接跳过这个点
+			if (i == j)continue;
+			if (p[j].x < p[i].x || p[j].y < p[i].y)continue;
+			//如果这个点位于藏宝图中
+			int xs = p[j].x - p[i].x;
+			int ys = p[j].y - p[i].y;
+			if (xs <= s && ys <= s) {
+				//情况1：对应于藏宝图的值也为1，那么k--
+				if (B[xs][ys] == 1)k--;
+				//情况2：对应于藏宝图的值不为1，说明不匹配，直接跳出
+				if (B[xs][ys] != 1) {
+					k = 100;
+					break;
+				}
+			}
+		}
+		if (k == 0)ans++;
+	}
+	cout << ans;
+	return;
+}
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n, s, temp;
+	ll l;
+	ll x, y;
+	cin >> n >> l >> s;
+	for (int i = 1; i <= n; i++) {
+		cin >> x >> y;
+		p[i] = { x,y };
+	}
+	for(int i=s;i>=0;i--)
+		for (int j = 0; j <=s; j++) {
+			cin >> temp;
+			if (temp == 1) c++;//初始化B的时候顺便记录值为1的个数
+			B[i][j] = temp;
+		}
+	solve(n, s, l);
+	return 0;
+}
+```
+
+## 202203
+
+### 第1题
+
+题目：http://118.190.20.162/view.page?gpid=T143
+
+**第一次提交**
+
+得分：80，运行超时
+
+思路
+
+以为第一题不会很严格，直接用双层循环遍历两个数组，没想到超时了
+
+代码
+
+```c++
+#include<iostream>
+using namespace std;
+int x[100001];
+int y[100001];
+void solve(int n, int k) {
+	int ans = 0;
+	int flag = 0;
+	for (int i = 1; i <= k; i++) {
+		flag = 0;
+		if (y[i] == 0) continue;
+		for (int j = i - 1; j >= 1; j--) {
+			if (y[i] == x[j]) {
+				flag = 1;
+				break;
+			}
+		}
+		if (flag == 0)ans++;
+	}
+	cout << ans;
+	return;
+}
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n, k;
+	cin >> n >> k;
+	for (int i = 1; i <= k; i++) 
+		cin >> x[i] >> y[i];
+	solve(n, k);
+	return 0;
+}
+```
+
+**第二次提交**
+
+得分：100
+
+思路
+
+用一个f[]数组，记录下标对应的变量是否被初始化过，0未初始化，1已初始化
+
+代码
+
+```c++
+#include<iostream>
+using namespace std;
+int x[100001];
+int y[100001];
+int f[100001];
+void solve(int k) {
+	int ans = 0;
+	for (int i = 1; i <= k; i++) {
+		if (f[y[i]] != 1) ans++;
+		f[x[i]] = 1;
+	}
+	cout << ans;
+	return;
+}
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n, k;
+	cin >> n >> k;
+	for (int i = 1; i <= k; i++) 
+		cin >> x[i] >> y[i];
+	f[0] = 1;
+	solve(k);
+	return 0;
+}
+```
+
+### 第2题
+
+题目：http://118.190.20.162/submitlist.page?gpid=T142
+
+**第一次提交**
+
+得分：70，运行超时
+
+思路
+
+看上去挺简单，就是满足t[j] - s <= c[j] - 1公式就可以，但数据量给的多，直接双层循环做会超时
+
+代码
+
+```c++
+#include<iostream>
+using namespace std;
+int t[100001];
+int c[100001];
+int q[100001];
+void solve(int n, int m, int k) {
+	int ans = 0;
+	for (int i = 1; i <= m; i++) {
+		ans = 0;
+		for (int j = 1; j <= n; j++) {
+			int s = q[i] + k;
+			if (s > t[j])continue;
+			if (t[j] - s <= c[j] - 1) ans++;
+		}
+		cout << ans << "\n";
+	}
+	return;
+}
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n, m, k;
+	cin >> n >> m >> k;
+	for (int i = 1; i <= n; i++)
+		cin >> t[i] >> c[i];
+	for (int i = 1; i <= m; i++)
+		cin >> q[i];
+	solve(n, m, k);
+	return 0;
+}
+```
+
+**第二次提交**
+
+得分：100
+
+思路
+
+**差分**
+
+首先对于每一个计划，计算出应在哪个时间段内拿到核酸证明，使得该计划能成功通行。然后让该时间段上的通行数都加1
+
+当遍历完所有通行计划后，对差分数组进行前缀和还原成操作过后的原始数组（A[i]表示在时刻 i 拿到核酸证明，可以使计划通行的数量）
+
+利用数组下标直接得到询问的结果
+
+代码
+
+```c++
+#include<iostream>
+using namespace std;
+const int N = 4e5 + 10;//t+q最大为2e5+2e5
+int b[N];//差分数组
+//对区间[left,right]中的每一个元素+c
+void insert(int left, int right, int c) {
+	b[left] += c;
+	b[right + 1] -= c;
+}
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n, m, k;
+	cin >> n >> m >> k;
+	for (int i = 1; i <= n; i++) {//对于每一个计划
+		int t, c;
+		cin >> t >> c;
+		//确定符合通过条件的最早拿到核酸证明时间
+		int left = t - c + 1;
+		left = left > 0 ? left : 1;
+		//确定符合通过条件的最晚拿到核酸证明时间
+		int right = t;
+		//在这个区间内拿到核酸证明的可通行数全部加1
+		insert(left, right, 1);
+	}
+	//对差分数组做前缀和，还原原始数组
+	for (int i = 1; i < N; i++)
+		b[i] += b[i - 1];
+	while (m--) {
+		int s;
+		cin >> s;
+		//直接通过数组下标查
+		cout << b[s + k] << "\n";
+	}
+	return 0;
+}
+```
+
+## 202112
+
+### 第1题
+
+题目：http://118.190.20.162/view.page?gpid=T138
+
+**第一次提交**
+
+得分：100
+
+思路
+
+* 题目提示说如果有多个f(x)的值一样，用乘法比加法快，因此想到记录f(x)值的个数，那么定义一个f[]数组，含义是f(x)=i的有f[i]个
+* 由于序列有序，求f(x)可以从下标=f(x-1)处开始，不用每次都从头开始遍历
+
+代码
+
+```c++
+#include<iostream>
+using namespace std;
+int A[200];//记录A序列
+int f[200];//f(x)=i的有f(i)个
+void solve(int n, int N) {
+	int pre = 0;//pre：f(x-1)的值
+	long long ans = 0;
+	for (int x = 1; x <= N - 1; x++) {
+		//特例：大于序列中所有数，直接f(x)=n
+		if (x >= A[n]) {
+			f[n]++;
+			continue;
+		}
+		//求f(x),以f(x-1)为起点，不用从头开始遍历
+		for (int i = pre; i <= n; i++) {
+			if (x < A[i + 1]) {
+				f[i]++;
+				pre = i;
+				break;
+			}
+		}
+	}
+	//计算求和
+	for (int i = 1; i <= n; i++)
+		if (f[i] != 0)ans += i * f[i];
+	cout << ans;
+	return;
+}
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n, N;
+	cin >> n >> N;
+	for (int i = 1; i <= n; i++)
+		cin >> A[i];
+	solve(n, N);
+	return 0;
+}
+```
+
+### 第2题
+
+题目：http://118.190.20.162/view.page?gpid=T137
+
+**第一次提交**
+
+得分：70，运行超时
+
+思路
+
+用二分查找求得f(x),用公式求得g(x),按题目给的公式求出答案
+
+代码
+
+```c++
+#include<iostream>
+using namespace std;
+int A[100005];
+int f[100005];
+int g[100005];
+int getF(int x, int ld, int ud) {
+	int mid = 0;
+	while (ld < ud) {
+		mid = (ld + ud) / 2;
+		if (x == A[mid])return mid;
+		if (x > A[mid])ld = mid + 1;
+		if (x < A[mid])ud = mid;
+	}
+	return ld - 1;
+}
+void solve(int n, int N) {
+	int r = N / (n + 1);
+	int ans = 0;
+	for (int i = 1; i < N; i++) {
+		int ld = f[i - 1];
+		if (ld == n)f[i] = ld;
+		else f[i] = getF(i, ld, n + 1);
+		g[i] = i / r;
+		int temp = f[i] >= g[i] ? f[i] - g[i] : g[i] - f[i];
+		ans += temp;
+	}
+	cout << ans;
+}
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n, N;
+	cin >> n>> N;
+	for (int i = 1; i <= n; i++)
+		cin >> A[i];
+	solve(n, N);
+	return 0;
+}
+```
+
+## 202109
+
+### 第1题
+
+题目：http://118.190.20.162/view.page?gpid=T129
+
+**第一次提交**
+
+得分：100
+
+思路 
+
+直接做就行
+
+代码
+
+```c++
+#include<iostream>
+using namespace std;
+int B[100001];
+long long sum_max;
+long long sum_min;
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n;
+	cin >> n;
+	for (int i = 1; i <= n; i++) {
+		cin >> B[i];
+		sum_max += B[i];
+		if (B[i] > B[i - 1])sum_min += B[i];
+	}
+	cout << sum_max << "\n" << sum_min;
+	return 0;
+}
+```
+
+### 第2题
+
+题目：http://118.190.20.162/view.page?gpid=T130
+
+**第一次提交**
+
+得分：
+
+思路 
+
+
+代码
+
+```c++
+
+
+```
