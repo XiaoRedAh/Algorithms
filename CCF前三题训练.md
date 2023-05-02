@@ -188,7 +188,127 @@ int main() {
 }
 ```
 
-**第二次提交**
+**第三次提交**
+
+### 第3题
+
+题目：http://118.190.20.162/view.page?gpid=T163
+
+得分：100
+
+思路：写在代码上了，参考 https://www.cnblogs.com/AlexHoring/p/17246861.html
+
+```c++
+#include<iostream>
+#include <vector>
+#include <algorithm>//使用了其中的sort(),unique()
+#include<string>//使用stio()函数将字符串转换为数字
+using namespace std;
+vector<int> d;//d[i]表示第i行的DN
+//a[i][j]表示第i行的第j个属性，first是属性编号，second是属性值
+vector <vector<pair<int, int>>> a;
+//当前待分析的集合（比如说有{1，2}，就是分析DA=d[1],d[2]的用户）
+vector<int> anlPtr;
+string s;//输入的表达式
+int ptr;//遍历当前表达式的指针
+
+//获取当前表达式，当前指针元素开始的一个连续语义
+string getStr() {
+	string str = "";
+	//如果当前指针指向数字，那就获取这个连续的数字返回
+	if (isdigit(s[ptr])) {
+		while (isdigit(s[ptr])) {
+			str += s[ptr];
+			ptr++;
+		}
+	}
+	//如果当前指针指向的是符号，则直接返回符号
+	else {
+		str += s[ptr];
+		ptr++;
+	}
+	return str;
+}
+
+/*对于当前的表达式，在传入的待分析用户中进行匹配分析，
+返回满足表达式的用户在d[i]中对应的下标*/
+vector<int> solve(vector<int> &anlPtr) {
+	vector<int> rel;//返回结果
+	string str = getStr();
+	//如果获取到运算符
+	if (!isdigit(str[0])) {
+		string op = str;//保存获取到的运算符
+		//求解运算符后的第一个原子表达式
+		getStr();//跳过(
+		vector<int> r1 = solve(anlPtr);
+		getStr();//跳过)
+		getStr();//跳过(
+		//&取交集。因此下一个原子表达式的待分析用户是上一个表达式的结果集
+		if (op == "&") rel = solve(r1);
+		/*|取并集。得到满足第二个原子表达式的集合后，与前一个原子表达式的解
+		合并，排序，去重，然后添加到总体的要返回的解的集合中*/
+		if (op == "|") {
+			vector<int> r2 = solve(anlPtr);
+			r1.insert(r1.end(), r2.begin(), r2.end());//合并
+			sort(r1.begin(), r1.end());//排序
+			auto last = unique(r1.begin(), r1.end());//去重
+			r1.erase(last, r1.end());//去重
+			rel.insert(rel.end(), r1.begin(), r1.end());//添加到解集
+		}
+		getStr();//跳过)
+	}
+	//如果获取到数字，则继续获取完整的一个原子表达式
+	else {
+		int key = stoi(str);//转换为数字，即属性编号
+		string op = getStr();//获取这个原子表达式的运算符
+		str = getStr();
+		int value = stoi(str);//转换为数字，即属性值
+		//遍历待分析集合
+		for (int i : anlPtr) {
+			//二分查找当前用户是否有属性编号为key的属性
+			auto it = lower_bound(a[i].begin(), a[i].end(), make_pair(key, 0));
+			if (it == a[i].end() || it->first != key)continue;//该用户没有这个属性
+			else {//该用户有这个属性
+				if (op == ":" && it->second == value)rel.push_back(i);
+				else if (op == "~" && it->second != value)rel.push_back(i);
+			}
+		}
+	}
+	return rel;//返回满足表达式的集合
+}
+
+int main() {
+	ios::sync_with_stdio(false),cin.tie(NULL),cout.tie(NULL);
+	int n, q, m;
+	cin >> n;
+	//根据输入的规模创造对应大小的存储空间
+	d.resize(n + 1);
+	a.resize(n + 1);
+	for (int i = 1; i <= n; i++) {
+		cin >> d[i];
+		cin >> q;
+		a[i].resize(q + 1);
+		for (int j = 1; j <= q; j++) {
+			cin >> a[i][j].first >> a[i][j].second;
+		}
+		anlPtr.push_back(i);
+	}
+	//输入m条表达式
+	cin >> m;
+	while (m--) {
+		cin >> s;
+		ptr = 0;//每分析完一个表达式后，指针都要归0
+		vector<int> ansPtr = solve(anlPtr);//保存匹配结果的DN对应在d[i]中的下标
+		vector<int> ans;
+		for (int i : ansPtr)
+			ans.push_back(d[i]);
+		sort(ans.begin(), ans.end());
+		for (int i : ans)cout << i << " ";
+		cout << '\n';
+	}
+	return 0;
+}
+```
 
 ## 202212
 
