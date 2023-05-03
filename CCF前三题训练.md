@@ -432,6 +432,120 @@ int main() {
 }
 ```
 
+### 第3题
+
+题目：
+
+得分：100
+
+思路：
+
+分为三个阶段：
+
+1. 填表：找规律，按对角线填，分为填第偶数条和填第奇数条对角线这两种情况
+2. 量化：如果需要量化，在填表的同时进行量化
+3. 解码：如果需要解码，直接套题目给的公式，四层循环就行（一开始以为四层循环过不了，但实在想不到其他方法）
+
+```c++
+#include<iostream>
+#include <vector>
+#include<cmath>
+using namespace std;
+vector<vector<int>> Q(8, vector<int>(8, 0));//量化矩阵Q
+vector<int> d(70);//存储要填充的数据
+vector<vector<int>> M(8, vector<int>(8, 0));
+vector <vector<int>> M_utl(8, vector<int>(8, 0));//T==2,用来存放最终解码得到的M
+void solve(int n, int T, vector<vector<int>> M) {
+	int i = 0;
+	int j = 0;
+	int t = 0;//记录现在填充了几个数
+	//填充矩阵M:按对角线填充，从第一条到第15条
+	for (int k = 1; k <= 15; k++) {
+		if (t == n)break;//带填充数填完后就不用填了
+		while (t < n) {
+			//当前位置填入数据，然后再分析下一步怎么填
+			M[i][j] = d[t+1];
+			if (T == 1 || T == 2)
+				M[i][j] = M[i][j] * Q[i][j];
+			t++;
+			//当前是第偶数条对角线
+			if (k % 2 == 0) {
+				if (k < 8 && j == 0) {
+					i = i + 1;
+					break;
+				}
+				else if (k >= 8 && i == 7) {
+					j = j + 1;
+					break;
+				}
+				i = i + 1;
+				j = j - 1;
+			}
+			//当前是第奇数条对角线
+			else {
+				if (k <= 8 && i == 0) {
+					j = j + 1;
+					break;
+				}
+				else if (k > 8 && j == 7) {
+					i = i + 1;
+					break;
+				}
+				i = i - 1;
+				j = j + 1;
+			}
+		}
+	}
+	if (T == 2) {
+		double sum = 0;
+		for(int i =0 ;i<=7;i++)
+			for (int j = 0; j <= 7; j++) {
+				sum = 0;
+				for (int u = 0; u <= 7; u++)
+					for (int v = 0; v <= 7; v++) {
+						double num1 = acos(-1)/8 * (i + 0.5) * u;
+						double num2 = acos(-1)/8 * (j + 0.5) * v;
+						double a = sqrt(0.5);
+						if (u == 0 && v == 0)a = 0.5;
+						else if (u != 0 && v != 0)a = 1;
+						sum += a * M[u][v]* cos(num1) * cos(num2);
+					}
+				int temp = (int)round((sum / 4) + 128);
+				M_utl[i][j] = temp;
+				if (temp < 0)M_utl[i][j] = 0;
+				if (temp > 255)M_utl[i][j] = 255;
+			}
+	}
+	if (T != 2) {
+		for (int i = 0; i <= 7; i++)
+			for (int j = 0; j <= 7; j++) {
+				cout << M[i][j] << " ";
+				if (j == 7)cout << '\n';
+			}
+	}
+	else if (T == 2) {
+		for (int i = 0; i <= 7; i++)
+			for (int j = 0; j <= 7; j++) {
+				cout << M_utl[i][j] << " ";
+				if (j == 7)cout << '\n';
+			}
+	}
+}
+int main() {
+	ios::sync_with_stdio(false),cin.tie(NULL),cout.tie(NULL);
+	int n, T;
+	for(int i=0;i<=7;i++)
+		for (int j = 0; j <= 7; j++) {
+			cin >> Q[i][j];
+		}
+	cin >> n >> T;
+	for (int i = 1; i <= n; i++)
+		cin >> d[i];
+	solve(n, T, M);
+	return 0;
+}
+```
+
 ## 202209
 
 
@@ -528,6 +642,86 @@ int main() {
 	//选择删除的物品，价值总和应该在不超过m的条件下尽可能最大
 	//实际上就是一个01背包问题
 	solve(n, m, sum);
+	return 0;
+}
+```
+
+### 第3题
+
+题目：http://118.190.20.162/view.page?gpid=T151
+
+得分：第一次10分，第二次100分（结果集要用set装起来，不然会有重复）
+
+思路：写在代码上	
+
+代码：
+
+```c++
+#include<iostream>
+#include <vector>
+#include<set>
+#define ll long long
+using namespace std;
+//一个漫游数据对应的结构体
+struct da {
+	ll d;
+	ll u;
+	ll r;
+};
+//v[i]存放第i天的漫游数据
+vector<da> v[1005];
+//dangerR[i]表示第i天时，处于风险的所有地区
+set<ll> dangerR[1005];
+//存放风险名单（不能直接输出，而是要用set先存起来，不然有重复）
+set<ll> ans;
+int main() {
+	ios::sync_with_stdio(false),cin.tie(NULL),cout.tie(NULL);
+	ll n, ri, mi, p;
+	ll d, u, r;
+	cin >> n;
+	for (int i = 0; i < n; i++) {//输出第i天的风险名单
+		cin >> ri >> mi;
+		//输入第i天的风险地区列表.同时更新i~i+6的dangerR
+		for (int j = 0; j < ri; j++) {
+			cin >> p;
+			for (int k = 0; k <= 6; k++) 
+				dangerR[i + k].insert(p);
+		}
+		//输入第i天收到的漫游数据
+		for (int k = 0; k < mi; k++) {
+			cin >> d >> u >> r;
+			if (d < 0)continue;
+			//到访当天，该地区不是风险区，那以后也不可能成为风险 。因此直接不保存这个数据
+			if (!dangerR[i].count(r))continue;
+			v[i].push_back({ d,u,r }); 
+		}
+		//分析最近七天的所有漫游数据，得到第i天的风险名单并输出
+		cout << i << " ";
+		for (int s = max(0, i - 6); s <= i; s++) {
+			for (int t = 0; t < v[s].size(); t++) {
+				d = v[s][t].d;
+				u = v[s][t].u;
+				r = v[s][t].r;
+				/*进入风险名单需要同时满足以下三点条件：
+				1. 这条数据是最近7天内的
+				2. 在到访的那一日，到访处于风险状态；
+				3. 自到访日至生成名单当日，到访地区持续处于风险状态。*/
+				if (d <= i - 7)continue;//条件1
+				//条件2，3
+				bool flag = true;
+				for (int z = d; z <= i; z++) {
+					if (!dangerR[z].count(r)) {
+						flag = false;
+						break;
+					}
+				}
+				if (flag)ans.insert(u);
+			}
+		}
+		for (auto it : ans)cout << it << " ";
+		cout << '\n';
+		ans.clear();//每次用完后还要清空
+	}
 	return 0;
 }
 ```
