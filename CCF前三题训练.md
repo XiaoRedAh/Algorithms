@@ -847,6 +847,170 @@ int main() {
 }
 ```
 
+### 第3题
+
+题目：http://118.190.20.162/view.page?gpid=T146
+
+得分：80，运行超时
+
+思路
+
+注释在代码
+
+代码
+
+```c++
+#include<iostream>
+#include <vector>
+#define ll long long
+using namespace std;
+//定义待授权行为结构体
+struct auth {
+	vector<string> entity;//主体
+	string operate;//操作清单
+	string categ;//资源种类
+    string cname;//资源名称
+};
+//定义角色结构体
+struct role {
+	string rname;//角色名
+	vector<string> operate;//操作清单
+	vector<string> categ;//资源种类
+	vector<string> cname;//资源名称
+	vector<string> users;//关联的用户
+	vector<string> group;//关联的用户组
+};
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n, m, q;
+	cin >> n >> m >> q;
+	vector<role> r(n);
+	//输入并存储角色
+	for (int i = 0; i < n; i++) {
+		string rname;
+		int nv, no, nn;
+		vector<string> users;
+		vector<string> group;
+		cin >> rname;
+		cin >> nv;//角色拥有的操作数
+		vector<string> operate(nv);
+		for (int j = 0; j < nv; j++) //赋予角色允许的操作
+			cin >> operate[j];
+		cin >> no;//角色允许的资源种类数
+		vector<string> categ(no);
+		for (int j = 0; j < no; j++)//赋予角色允许的资源种类
+			cin >> categ[j];
+		cin >> nn;//角色允许的资源名称数
+		vector<string> cname(nn);
+		for (int j = 0; j < nn; j++)//赋予角色允许的资源名称
+			cin >> cname[j];
+		//r.push_back({ rname,operate,categ,cname });
+		//将构建的角色存入角色数组里
+		r[i] = { rname,operate,categ,cname,users,group };
+	}
+	//输入并存储角色关联
+	for (int i = 0; i < m; i++) {
+		int num;
+		char c;
+		string rname,n;
+		cin >> rname >> num;
+		//找到对应角色名的角色，写入关联信息
+		for (int j = 0; j < r.size(); j++) {
+			if (r[j].rname == rname) {
+				for (int k = 0; k < num; k++) {
+					cin >> c >> n;
+					if (c == 'g')r[j].group.push_back(n);
+					else if (c == 'u')r[j].users.push_back(n);
+				}
+			}
+		}
+	}
+	//输入待授权行为，进行校验
+	while (q) {
+		string uname,gruop,operate,categ,cname;
+		int num;
+		int flag = 0;//默认校验不通过
+		cin >> uname;
+		cin >> num;
+		vector<string> entity(num);
+		for (int i = 0; i < num; i++)
+			cin >> entity[i];
+		cin >> operate >> categ >> cname;
+		//校验每个角色
+		for (int i = 0; i < r.size(); i++) {
+			int isExit = 0;//标志这个授权行为的用户/用户组是否关联与角色
+			//先看这个角色是否直接关联了授权行为的用户
+			for (int j = 0; j < r[i].users.size(); j++) {
+				if (uname == r[i].users[j]) {
+					isExit = 1;
+					break;
+				}
+			}
+			//然后再看这个角色的授权组里是否有本次授权行为的用户组
+			if (isExit == 0) {
+				for (int k = 0; k < entity.size(); k++) {
+					//if (isExit == 1)break;
+					for (int j = 0; j < r[i].group.size(); j++) {
+						if (entity[k] == r[i].group[j]) {
+							isExit = 1;
+							break;
+						}
+					}
+					if (isExit == 1)break;
+				}
+			}
+			//如果该授权行为能匹配该角色，才做进一步校验
+			if (isExit == 1) {
+				int isOp = 0;//标志是否有对应操作
+				int isInC = 0;//标志是否有对应的资源种类
+				//校验是否有对应操作
+				if (r[i].operate.size() != 0 && r[i].operate[0] == "*")isOp = 1;
+				else {
+					for (int k = 0; k < r[i].operate.size(); k++) {
+						if (r[i].operate[k] == operate) {
+							isOp = 1;
+							break;
+						}
+					}
+				}
+				if (isOp == 1) {
+					//校验是否有对应资源种类
+					if (r[i].categ.size() != 0 && r[i].categ[0] == "*")isInC = 1;
+					else {
+						for (int k = 0; k < r[i].categ.size(); k++) {
+							if (r[i].categ[k] == categ) {
+								isInC = 1;
+								break;
+							}
+						}
+					}
+				}
+				//有对应操作和资源种类才可以进一步校验
+				if (isOp==1 && isInC == 1) {
+					if (r[i].cname.size() == 0)flag = 1;
+					else {
+						for (int k = 0; k < r[i].cname.size(); k++) {
+							if (cname == r[i].cname[k]) {
+								flag = 1;
+								break;
+							}
+						}
+					}
+				}
+			}
+			//一旦校验通过，直接输出1，跳出循环
+			if (flag == 1) {
+				cout << flag << '\n';
+				break;
+			}
+		}
+		if (flag == 0)cout << flag << '\n';
+		q--;
+	}
+	return 0;
+}
+```
+
 ## 202203
 
 ### 第1题
