@@ -853,11 +853,40 @@ int main() {
 
 得分：80，运行超时
 
+
 思路
 
-注释在代码
+理清题目的要求
+
+给待授权行为，角色（包含角色关联信息）定义相应的结构体进行存储
+
+输入：
+1. 确定角色
+2. 确定角色关联
+3. 输入待授权行为
+   在这一步的时候进行判断并输出，判断的逻辑如下：
+   对所有角色遍历：
+   1. 查当前角色关联的授权清单，若输入的行为的主体/所属用户组在授权清单中，则继续下一步判断
+   2. 判断当前角色是否允许待授权行为的操作：
+      * 角色操作清单为”*”
+      * 待授权的操作在角色的操作清单中
+      如果允许，则继续下一步判断
+   3. 判断当前角色是否含有待授权行为所需的资源种类
+       * 角色资源种类清单为”*”
+       * 待授权所需的资源种类在角色的资源种类清单中
+      如果含有，则继续下一步判断
+   4. 判断当前角色是否含有待授权行为所需的资源名称
+       * 角色资源名称清单为空数组
+       * 待授权行为所需的资源名称在角色的资源名称清单中
+
+只有第四步校验通过，才能说明有权限，输出1
 
 代码
+
+**第一次交的时候测试样例过了，但错误，排错方向**
+
+* 自己编写比较特殊的边界样例，测试边界条件是否考虑周全/在边界时，数组的开辟，访问是否越界
+* 选择分支太多，有时候会忘掉一个判断分支/用混了
 
 ```c++
 #include<iostream>
@@ -1192,6 +1221,179 @@ int main() {
 		cin >> s;
 		//直接通过数组下标查
 		cout << b[s + k] << "\n";
+	}
+	return 0;
+}
+```
+
+### 第3题
+
+题目：http://118.190.20.162/view.page?gpid=T141
+
+思路：
+
+写在代码上了
+
+得分：80，错误
+
+**编写代码时候遇到的问题**
+
+对于stl中的set，map
+
+拿到map的迭代器it，it->first是map的键，it->second是map的值
+
+如果想要插入/获取/引用元素，那在拿到迭代器之后，**必须对迭代器进行判断：是否为end()【如果不这样做，假设是end(),对end()操作是非法的】**
+
+```c++
+auto it = app_node.find(ai);//find（）返回的是指向set中值为ai或map中key为ai的迭代器
+if (it == app_node.end()) app_node[ai] = {node1};
+else it->second.insert(node1);
+```
+
+```c++
+auto it2 = app_node.find(paai);
+if (paai != 0 && it2!=app_node.end()) badNode = it2->second;
+```
+
+对于map<int,set<int>>类型变量插入元素有以下两种，但第1种我在写这道题的时候报C2100，用第二种就不会报错
+
+```c++
+std::map<int, std::set<int>> my_map;
+// 向 my_map 中插入键值对
+my_map.insert({1, {2, 3}});
+my_map[2] = {4, 5, 6};//这个应该更稳点
+```
+
+
+
+代码
+
+```c++
+#include<iostream>
+#include<set>
+#include<map>
+using namespace std;
+//area_node[i]表示可用区i的节点集合
+set<int> area_node[1001];
+//app_area[i]表示应用i所在的可用区集合
+map<int,set<int>> app_area;
+//app_node[i]表示应用i所在的节点集合
+map<int,set<int>> app_node;
+//node_app_count[i]表示节点i有多少个应用
+int node_app_count[1001];
+int zero = 0;
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n, m, g;
+	int fi, ai, nai, pai, paai, paari;
+	cin >> n >> m;
+	//根据输入，向对应可用区存入节点
+	for (int i = 1; i <= n; i++) {
+		int area;
+		cin >> area;
+		area_node[area].insert(i);
+	}
+	//输入任务组并校验
+	cin >> g;
+	for (int i = 1; i <= g; i++) {
+		cin >> fi >> ai >> nai >> pai >> paai >> paari;
+		int areaOnly = 0;//如果指定了唯一的可用区，则指向那个可用区
+		set<int> areaWait;//候选可用区
+		for (int k = 1; k <= m; k++)areaWait.insert(k);
+		set<int> badNode;//反亲和性所不允许的节点集合
+		for (int j = 1; j <= fi; j++) {
+			//如果必须和指定应用的计算任务在同一可用区上运行
+			if (pai != 0) {
+				auto it = app_area.find(pai);
+				if (it == app_area.end()) {
+					cout <<zero<<" ";
+					continue;
+				}
+				else areaWait = it->second;
+			}
+			//如果必须在指定可用区上运行。
+			if (nai != 0) {
+				if (areaWait.size() != 0 && areaWait.count(nai) == 0) {
+					cout <<zero<<" ";
+					continue;
+				}
+				else areaOnly = nai;
+			}
+			//如果不能和指定应用的计算任务在同一个计算节点上运行。
+			auto it2 = app_node.find(paai);
+			if (paai != 0 && it2!=app_node.end()) badNode = it2->second;
+			//上述操作确定了可用区，下面过滤节点
+			int area = areaOnly;
+			//尾号是1：不考虑反亲和；尾号是2：考虑反亲和
+			int node1 = 1005;
+			int node2 = 1005;
+			int c1 = INT_MAX;
+			int c2 = INT_MAX;
+			//在计算节点的时候，考虑反亲和及不考虑反亲和两个一起算，这样就不用以后返回来再算
+			if (areaOnly != 0) {//如果只有一个可用区
+				for (int n : area_node[areaOnly]) {
+					int s = node_app_count[n];//当前节点的应用数
+					if (paai != 0 && !badNode.count(n)) {
+						if (s == c2 && n < node2) n = node2;
+						if (s < c2) {
+							node2 = n;
+							c2 = s;
+						}
+					}
+					if (s == c1 && n < node1) n = node1;
+					if (s < c1) {
+						node1 = n;
+						c1 = s;
+					}
+				}
+			}
+			else {//如果不止一个可用区
+				for (int a : areaWait) {
+					for (int n : area_node[a]) {
+						int s = node_app_count[n];//当前节点的应用数
+						if (paai!=0 && !badNode.count(n)) {
+							if (s == c2 && n < node2) node2 = n;
+							if (s < c2) {
+								node2 = n;
+								c2 = s;
+							}
+						}
+						if (s == c1 && n < node1) node1 = n;
+						if (s < c1) {
+							node1 = n;
+							c1 = s;
+						}
+					}
+				}
+			}
+			//分配节点，更新信息
+			//如果node2==1005，说明反亲和的条件使得任务没有与之匹配的计算节点
+			int flag = 1;
+			if( (node1 == 1005 && node2 == 1005) || (node2 == 1005 && paari == 1) ){
+				cout << zero << " ";
+				flag = 0;
+			}
+			else if (node2 == 1005 && paari == 0) {
+				cout << node1 << " ";
+				auto it = app_node.find(ai);
+				if (it == app_node.end()) app_node[ai] = {node1};
+				else it->second.insert(node1);
+				node_app_count[node1] += 1;
+			}
+			else if (node2 != 1005) {
+				cout << node2 << " ";
+				auto it = app_node.find(ai);
+				if (it == app_node.end()) app_node[ai] = { node2 };
+				else it->second.insert(node2);
+				node_app_count[node2] += 1;
+			}
+			if (flag == 1) {
+				auto it = app_area.find(ai);
+				if (it == app_area.end()) app_area[ai] = { area };
+				else it->second.insert(area);
+			}
+		}
+		cout << endl;
 	}
 	return 0;
 }
