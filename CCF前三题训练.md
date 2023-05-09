@@ -190,6 +190,24 @@ int main() {
 
 **第三次提交**
 
+https://blog.csdn.net/m0_53641110/article/details/129949141
+
+https://blog.csdn.net/qq_52553462/article/details/130412071
+
+**第四次提交**
+
+经典的最大值最小问题，可以用二分答案做
+
+得分：100
+
+思路：
+
+代码
+
+```c++
+
+```
+
 ### 第3题
 
 题目：http://118.190.20.162/view.page?gpid=T163
@@ -1234,11 +1252,12 @@ int main() {
 
 写在代码上了
 
-得分：80，错误
+得分：80，错误（但在AcWing就通过了）
 
 **编写代码时候遇到的问题**
 
-对于stl中的set，map
+* 要先理清两个东西之间是一对一/一对多/多对一/多对多关系，才进一步规划用map/set/vector/它们的组合
+* 对于stl中的set，map的使用
 
 拿到map的迭代器it，it->first是map的键，it->second是map的值
 
@@ -1264,6 +1283,10 @@ my_map.insert({1, {2, 3}});
 my_map[2] = {4, 5, 6};//这个应该更稳点
 ```
 
+**测试样例正确，提交却是0分**
+
+* 测试边界数据，特殊数据
+* 自己编的样例不要和测试样例类似，最好在类型上有所区分
 
 
 代码
@@ -1334,13 +1357,13 @@ int main() {
 				for (int n : area_node[areaOnly]) {
 					int s = node_app_count[n];//当前节点的应用数
 					if (paai != 0 && !badNode.count(n)) {
-						if (s == c2 && n < node2) n = node2;
+						if (s == c2 && n < node2) node2 = n;
 						if (s < c2) {
 							node2 = n;
 							c2 = s;
 						}
 					}
-					if (s == c1 && n < node1) n = node1;
+					if (s == c1 && n < node1) node1 = n;
 					if (s < c1) {
 						node1 = n;
 						c1 = s;
@@ -1508,6 +1531,88 @@ int main() {
 	solve(n, N);
 	return 0;
 }
+```
+
+### 第3题
+
+**第一次提交**
+
+题目：http://118.190.20.162/view.page?gpid=T136
+
+思路：
+
+只做出了s=-1的情况，不会算校验码
+
+得分：40，错误
+
+```c++
+#include<iostream>
+#include<vector>
+#include<string>
+//使用isdigit(),isupper().islower()（它们明明在<ctype.h>里，但CCF只有include这个才编译通过）
+#include <algorithm>
+using namespace std;
+vector<int> ans;
+vector<int> v;
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	//值 = 大写字母-65 = 小写字母-97 = 数字
+	int w, s, k;
+	string codeStr;
+	int pre = 0;//标志前一个字符：0大写，1小写，2数字；题目规定编码开始时是大写模式
+	cin >> w >> s;
+	cin >> codeStr;
+	//计算校验码字的数量k
+	if (s == -1)k = 0;
+	else k = pow(2, s + 1);
+	//先预存储长度码字
+	ans.push_back(0);
+	//存储数字序列
+	for (int i = 0; i < codeStr.length(); i++) {
+		if (isdigit(codeStr[i])) {
+			//string c = "" + codeStr[i];//将char类型的元素转成string类型，才能使用stoi()
+			if (pre == 0 || pre == 1) v.push_back(28);
+			string c = "";
+			c += codeStr[i];
+			v.push_back(stoi(c));
+			pre = 2;
+		}
+		else if (isupper(codeStr[i])) {
+			if (pre == 1) {
+				v.push_back(28);
+				v.push_back(28);
+			}
+			if (pre == 2)v.push_back(28);
+			v.push_back(codeStr[i] - 65);
+			pre = 0;
+		}
+		else {
+			if (pre == 0||pre==2)v.push_back(27);
+			v.push_back(codeStr[i] - 97);
+			pre = 1;
+		}
+	}
+	//计算数字序列，得到数据码字
+	for (int i = 0; i < v.size(); i = i + 2) {
+		if (i == v.size() - 1 && i % 2 == 0)ans.push_back(30 * v[i] + 29);
+		else ans.push_back(30 * v[i] + v[i + 1]);
+	}
+	//填充900，直至总码字数量能被w（每行码字数）整除
+	while ((k + ans.size()) % w != 0) ans.push_back(900);
+	//更新长度码字
+	ans[0] = ans.size();
+	//计算并存储校验码
+	
+	//输出所有码字序列
+	for (int i : ans)cout << i << '\n';
+	return 0;
+}
+```
+
+**第二次提交**
+
+```c++
+
 ```
 
 ## 202109
