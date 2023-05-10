@@ -194,18 +194,92 @@ https://blog.csdn.net/m0_53641110/article/details/129949141
 
 https://blog.csdn.net/qq_52553462/article/details/130412071
 
+得分：100
+
+思路：
+
+开垦n块田所用的最短时间取决于最长耗时的田，但唯有把所有耗时最长的田的耗时都降低，最短时间才会降低。也就是说，要么耗时最长的田能被一起降低，不然使用资源去下降它们中的部分（1，2...个）是没有意义的
+
+因此只需要一个数组sa，sa[i]表示将当前开垦耗时为i的所有田地耗时都减1所需的总资源。
+
+代码
+
+```c++
+#include<iostream>
+#include<vector>
+using namespace std;
+//sa[i]表示将当前开垦耗时为i的所有田地耗时都减1所需的总资源
+vector<int> sa(100005);
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int n, m, k;
+	int ti, ci;
+	int max_t = -1;//记录最长耗时
+	cin >> n >> m >> k;
+	for (int i = 1; i <= n; i++) {
+		cin >> ti >> ci;
+		sa[ti] += ci;
+		max_t = max(max_t, ti);
+	}
+	while (m >= sa[max_t]) {
+		if (max_t - 1 < k)break;
+		m -= sa[max_t];
+		sa[max_t - 1] += sa[max_t];//max_t的全部变成了max_t-1,因此要更新数组
+		max_t -= 1;
+	}
+	cout << max_t;
+	return 0;
+}
+```
+
+
 **第四次提交**
 
-经典的最大值最小问题，可以用二分答案做
+最大值最小化问题，可以用二分答案做
 
 得分：100
 
 思路：
 
+对于耗时，不一天天减，直接二分到mid。如果判断现有的资源可以使所有田的耗时缩减的mid（即n块田的最小耗时为mid天），就往小的进一步二分；如果不能，就往大的进一步二分
+
+套用二分答案的板子即可实现
+
 代码
 
 ```c++
-
+#include<iostream>
+# include<vector>
+using namespace std;
+vector<int> t(100005);
+vector<int> c(100005);
+int n, m, k;
+bool check(int x) {
+	int cost = 0;
+	for (int i = 1; i <= n; i++) {
+		if (t[i] <= x)continue;
+		cost += (t[i] - x) * c[i];
+		if (cost > m)return false;
+	}
+	return true;
+}
+int main() {
+	ios::sync_with_stdio(false), cin.tie(NULL), cout.tie(NULL);
+	int max_t = -1;//记录最长耗时
+	cin >> n >> m >> k;
+	for (int i = 1; i <= n; i++) {
+		cin >> t[i] >> c[i];
+		max_t = max(max_t, t[i]);
+	}
+	int l = k - 1, r = max_t + 1;
+	while (l + 1 < r) {
+		int mid = l + r >> 1;
+		if (check(mid))r = mid;
+		else l = mid;
+	}
+	cout << r;
+	return 0;
+}
 ```
 
 ### 第3题
